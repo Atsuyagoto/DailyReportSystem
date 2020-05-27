@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - 日報管理システム</title>
@@ -31,9 +31,20 @@
         </div>
     </div>
     <div class="container body-content">
+        @* フラッシュメッセージがあれば出力 *@
+        @if (TempData["flush"] != null)
+        {
+            <br />
+            <!-- Success Alert -->
+            <div class="alert alert-success">
+                <strong>@TempData["flush"]</strong>
+            </div>
+        }
+
         @RenderBody()
         <hr />
         <footer>
+            @* 修正 *@
             <p>&copy; @DateTime.Now.Year - 日報管理システム</p>
         </footer>
     </div>

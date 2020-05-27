@@ -40,7 +40,7 @@ namespace DailyReportSystem
         {
         }
 
-        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
+        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
             var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
             // ユーザー名の検証ロジックを設定します
@@ -53,11 +53,12 @@ namespace DailyReportSystem
             // パスワードの検証ロジックを設定します
             manager.PasswordValidator = new PasswordValidator
             {
-                RequiredLength = 6,
-                RequireNonLetterOrDigit = true,
-                RequireDigit = true,
-                RequireLowercase = true,
-                RequireUppercase = true,
+                RequiredLength = 4,
+                // 開発のためにコメントアウト
+                //RequireNonLetterOrDigit = true,
+                //RequireDigit = true,
+                //RequireLowercase = true,
+                //RequireUppercase = true,
             };
 
             // ユーザー ロックアウトの既定値を設定します。
