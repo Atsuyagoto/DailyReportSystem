@@ -49,5 +49,7 @@ namespace DailyReportSystem.Models
         {
             return new ApplicationDbContext();
         }
+
+        
     }
 }
