@@ -1,14 +1,16 @@
-﻿@model DailyReportSystem.Models.EmployeesDetailsViewModel
+﻿@model DailyReportSystem.Models.EmployeesDeleteViewModel
 
 @{
-    ViewBag.Title = "従業員情報　詳細ページ";
+    ViewBag.Title = "従業員情報の削除";
 }
 
-<h2>従業員情報　詳細ページ</h2>
+<h2>従業員情報　削除</h2>
 
+<h3>本当に削除してもよろしいですか？</h3>
 <div>
     <hr />
     <dl class="dl-horizontal">
+
 
         <dt>
             @Html.DisplayNameFor(model => model.Email)
@@ -52,10 +54,16 @@
         </dd>
 
     </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <br />
+            <p><input type="submit" value="削除する" class="btn btn-default" /></p>
+            <p>@Html.ActionLink("一覧に戻る", "Index")</p>
+        </div>
+
+    }
 </div>
-<p>
-    @Html.ActionLink("この従業員情報を編集する", "Edit", new { id = Model.Id })
-</p>
-<p>
-    @Html.ActionLink("一覧に戻る", "Index")
-</p>
