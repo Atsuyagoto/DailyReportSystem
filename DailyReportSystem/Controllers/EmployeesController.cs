@@ -84,7 +84,6 @@ namespace DailyReportSystem.Controllers
             // 作成したリストをIndexビューに送る
             return View(employees);
         }
-
         // GET: Employees/Details/5
         public ActionResult Details(string id)
         {
@@ -109,6 +108,10 @@ namespace DailyReportSystem.Controllers
                 CreatedAt = applicationUser.CreatedAt,
                 UpdatedAt = applicationUser.UpdatedAt
             };
+
+            // RoleがAdminかどうか確認し、そうなら"管理者"、違うなら"一般"にする
+            employee.Role = UserManager.IsInRole(applicationUser.Id, "Admin") ?
+                "管理者" : "一般";
 
             return View(employee);
         }
