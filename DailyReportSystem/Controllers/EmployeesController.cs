@@ -16,6 +16,7 @@ using Microsoft.AspNet.Identity.EntityFramework; // 追加
 
 namespace DailyReportSystem.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class EmployeesController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
@@ -85,6 +86,7 @@ namespace DailyReportSystem.Controllers
             return View(employees);
         }
         // GET: Employees/Details/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Details(string id)
         {
             // idが無い場合、不正なリクエストとして処理
@@ -121,6 +123,7 @@ namespace DailyReportSystem.Controllers
         // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
 
         // GET: Employees/Create
+        [AllowAnonymous]
         public ActionResult Create()
         {
             return View(new EmployeesCreateViewModel());
@@ -128,6 +131,7 @@ namespace DailyReportSystem.Controllers
 
         // POST: Employee/Create
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Include = "Email,EmployeeName,Password,AdminFlag")]
                                     EmployeesCreateViewModel model)
