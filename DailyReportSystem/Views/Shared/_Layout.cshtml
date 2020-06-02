@@ -23,8 +23,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("従業員管理", "Index", "Employees")</li>
-                    <li>@Html.ActionLink("詳細", "About", "Home")</li>
-                    <li>@Html.ActionLink("問い合わせ", "Contact", "Home")</li>
+                    @* 追加 *@
+                    <li>@Html.ActionLink("日報管理", "Index", "Reports")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

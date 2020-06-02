@@ -10,6 +10,7 @@ using DailyReportSystem.Models;
 
 namespace DailyReportSystem.Controllers
 {
+    [Authorize]
     public class ReportsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();

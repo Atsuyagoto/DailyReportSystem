@@ -63,27 +63,26 @@ namespace DailyReportSystem.Controllers
         // GET: Employees
         public ActionResult Index()
         {
-            // ビューに送るためのEmployeesIndexViewModelのリストを作成
-            List<EmployeesIndexViewModel> employees = new List<EmployeesIndexViewModel>();
-            // ユーザー一覧を、作成日時が最近のものから順にしてリストとして取得
-            List<ApplicationUser> users = db.Users.OrderByDescending(u => u.CreatedAt).ToList();
-            // ユーザーのリストを、EmployeesIndexViewModelのリストに変換
-            foreach (ApplicationUser applicationUser in users)
+            // 日報のリストから、表示用のビューモデルのリストを作成
+            List<ReportsIndexViewModel> indexViewModels = new List<ReportsIndexViewModel>();
+            var reports = db.Reports
+                .OrderByDescending(r => r.ReportDate)
+                .ToList();
+            foreach (Report report in reports)
             {
-                // EmployeesIndexViewModelをApplicationUserから必要なプロパティだけ抜き出して作成
-                EmployeesIndexViewModel employee = new EmployeesIndexViewModel
+                ReportsIndexViewModel indexViewModel = new ReportsIndexViewModel
                 {
-                    Email = applicationUser.Email,
-                    EmployeeName = applicationUser.EmployeeName,
-                    DeleteFlg = applicationUser.DeleteFlg,
-                    Id = applicationUser.Id
-
+                    Id = report.Id,
+                    // 従業員のリストからこの日報のEmployeeIdで検索をかけて取得した従業員の名前を設定
+                    EmployeeName = db.Users.Find(report.EmployeeId).EmployeeName,
+                    ReportDate = report.ReportDate,
+                    Title = report.Title,
+                    Content = report.Content
                 };
-                // 作成したEmployeesIndexViewModelをリストに追加
-                employees.Add(employee);
+                indexViewModels.Add(indexViewModel);
             }
-            // 作成したリストをIndexビューに送る
-            return View(employees);
+
+            return View(indexViewModels);
         }
         // GET: Employees/Details/5
         [Authorize(Roles = "Admin")]
