@@ -39,21 +39,5 @@ namespace DailyReportSystem.Models
         public DateTime? UpdatedAt { get; set; }
 
     }
-    public class ReportsCreateViewModel
-    {
-        [DisplayName("日付")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [Required(ErrorMessage = "日報の日付を入力してください。")]
-        public DateTime? ReportDate { get; set; }
 
-        [DisplayName("タイトル")]
-        [Required(ErrorMessage = "タイトルを入力してください。")]
-        [StringLength(100, ErrorMessage = "{0}は{1}文字を超えることはできません。")]
-        public string Title { get; set; }
-
-        [DisplayName("内容")]
-        [Required(ErrorMessage = "内容を入力してください。")]
-        public string Content { get; set; }
-    }
 }

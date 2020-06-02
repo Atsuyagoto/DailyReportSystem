@@ -35,7 +35,19 @@ namespace DailyReportSystem.Controllers
             {
                 return HttpNotFound();
             }
-            return View(report);
+            ReportsDetailsViewModel detailsViewModel = new ReportsDetailsViewModel
+            {
+                Id = report.Id,
+                ReportDate = report.ReportDate,
+                Title = report.Title,
+                Content = report.Content,
+                CreatedAt = report.CreatedAt,
+                UpdatedAt = report.UpdatedAt,
+            };
+            detailsViewModel.EmployeeName = db.Users.Find(report.EmployeeId).EmployeeName;
+            detailsViewModel.isReportCreater = User.Identity.GetUserId() == report.EmployeeId;
+
+            return View(detailsViewModel);
         }
 
         // GET: Reports/Create
@@ -77,20 +89,54 @@ namespace DailyReportSystem.Controllers
             return View(createViewModel);
         }
 
+        // GET: Reports/Edit/5
+        public ActionResult Edit(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Report report = db.Reports.Find(id);
+            if (report == null)
+            {
+                return HttpNotFound();
+            }
+
+            //本人の日報でなければ表示しないように、それをEdit.cshtmlにTempDataで伝える。
+            if (report.EmployeeId != User.Identity.GetUserId())
+            {
+                TempData["wrong_person"] = "true";
+            }
+            ReportsEditViewModel editViewModel = new ReportsEditViewModel
+            {
+                Id = report.Id,
+                ReportDate = report.ReportDate,
+                Title = report.Title,
+                Content = report.Content
+            };
+            return View(editViewModel);
+        }
+
         // POST: Reports/Edit/5
-        // 過多ポスティング攻撃を防止するには、バインド先とする特定のプロパティを有効にしてください。
-        // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,EmployeeId,ReportDate,Title,Content,CreatedAt,UpdatedAt")] Report report)
+        public ActionResult Edit([Bind(Include = "Id,ReportDate,Title,Content")] ReportsEditViewModel editViewModel)
         {
             if (ModelState.IsValid)
             {
+                Report report = db.Reports.Find(editViewModel.Id);
+                report.ReportDate = editViewModel.ReportDate;
+                report.Title = editViewModel.Title;
+                report.Content = editViewModel.Content;
+                report.UpdatedAt = DateTime.Now;
                 db.Entry(report).State = EntityState.Modified;
                 db.SaveChanges();
+
+                // TempDataにフラッシュメッセージを入れておく。
+                TempData["flush"] = "日報を編集しました。";
                 return RedirectToAction("Index");
             }
-            return View(report);
+            return View(editViewModel);
         }
 
         // GET: Reports/Delete/5
