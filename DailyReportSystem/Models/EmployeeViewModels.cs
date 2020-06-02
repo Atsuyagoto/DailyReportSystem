@@ -97,5 +97,27 @@ namespace DailyReportSystem.Models
         [DisplayName("権限")]
         public string Role { get; set; }
     }
+    public class EmployeesDeleteViewModel
+    {
+        public string Id { get; set; }
+
+        [DisplayName("メールアドレス")]
+        public string Email { get; set; }
+
+        [DisplayName("氏名")]
+        public string EmployeeName { get; set; }
+
+        [DisplayName("登録日時")]
+        [DataType(DataType.DateTime)]
+        public DateTime? CreatedAt { get; set; }
+
+        [DisplayName("更新日時")]
+        [DataType(DataType.DateTime)]
+        public DateTime? UpdatedAt { get; set; }
+
+        [DisplayName("権限")]
+        public string Role { get; set; }
+
+    }
 
 }

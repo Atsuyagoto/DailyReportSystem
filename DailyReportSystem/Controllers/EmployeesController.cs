@@ -256,29 +256,49 @@ namespace DailyReportSystem.Controllers
         // GET: Employees/Delete/5
         public ActionResult Delete(string id)
         {
+            // idが無い場合、不正なリクエストとして処理
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            // DBからidで検索して該当するユーザーを取得
             ApplicationUser applicationUser = db.Users.Find(id);
+            // ユーザーが取得できなければ、NotFoundエラーページへ
             if (applicationUser == null)
             {
                 return HttpNotFound();
             }
-            return View(applicationUser);
+            // ビューモデルにデータを詰め替える
+            EmployeesDeleteViewModel employee = new EmployeesDeleteViewModel
+            {
+                Id = applicationUser.Id,
+                Email = applicationUser.Email,
+                EmployeeName = applicationUser.EmployeeName,
+                CreatedAt = applicationUser.CreatedAt,
+                UpdatedAt = applicationUser.UpdatedAt
+            };
+
+            return View(employee);
         }
 
-        // POST: Employees/Delete/5
+        // POST: Employee/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
+            // DBからidで検索して該当するユーザーを取得
             ApplicationUser applicationUser = db.Users.Find(id);
-            db.Users.Remove(applicationUser);
+            // ユーザーを論理削除
+            applicationUser.DeleteFlg = 1;
+            // StateをModifiedにしてUPDATE文を行うように設定
+            db.Entry(applicationUser).State = EntityState.Modified;
             db.SaveChanges();
-            return RedirectToAction("Index");
-        }
 
+            // TempDataにフラッシュメッセージを入れておく。TempDataは現在のリクエストと次のリクエストまで存在
+            TempData["flush"] = String.Format("{0}さんの情報を削除しました。", applicationUser.EmployeeName);
+
+            return RedirectToAction("Index", "Employees");
+        }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
