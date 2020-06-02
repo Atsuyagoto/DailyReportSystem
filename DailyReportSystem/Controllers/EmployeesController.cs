@@ -88,22 +88,35 @@ namespace DailyReportSystem.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(string id)
         {
+            // idが無い場合、不正なリクエストとして処理
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            // DBからidで検索して該当するユーザーを取得
             ApplicationUser applicationUser = db.Users.Find(id);
+            // ユーザーが取得できなければ、NotFoundエラーページへ
             if (applicationUser == null)
             {
                 return HttpNotFound();
             }
-            return View(applicationUser);
+            // ビューモデルにデータを詰め替える
+            EmployeesDetailsViewModel employee = new EmployeesDetailsViewModel
+            {
+                Id = applicationUser.Id,
+                Email = applicationUser.Email,
+                EmployeeName = applicationUser.EmployeeName,
+                CreatedAt = applicationUser.CreatedAt,
+                UpdatedAt = applicationUser.UpdatedAt
+            };
+
+            return View(employee);
         }
 
         // POST: Employees/Create
         // 過多ポスティング攻撃を防止するには、バインド先とする特定のプロパティを有効にしてください。
         // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
-    
+
         // GET: Employees/Create
         public ActionResult Create()
         {
@@ -162,18 +175,68 @@ namespace DailyReportSystem.Controllers
         // GET: Employees/Edit/5
         public ActionResult Edit(string id)
         {
+            // idが無い場合、不正なリクエストとして処理
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            // DBからidで検索して該当するユーザーを取得
             ApplicationUser applicationUser = db.Users.Find(id);
             if (applicationUser == null)
             {
                 return HttpNotFound();
             }
-            return View(applicationUser);
+            // ビューモデルにデータを詰め替える
+            EmployeesEditViewModel employee = new EmployeesEditViewModel
+            {
+                Id = applicationUser.Id,
+                Email = applicationUser.Email,
+                EmployeeName = applicationUser.EmployeeName
+            };
+            return View(employee);
         }
+        // POST: Employee/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit(
+            [Bind(Include = "Id,Email,EmployeeName,Password,AdminFlag")] EmployeesEditViewModel employee)
+        {
 
+            if (ModelState.IsValid)
+            {
+                // DBからidのユーザーを検索し取得。そのユーザーに対し変更をする
+                ApplicationUser applicationUser = db.Users.Find(employee.Id);
+                // IdentityアカウントのUserNameにはメールアドレスを入れる必要がある
+                applicationUser.UserName = employee.Email;
+                applicationUser.Email = employee.Email;
+                applicationUser.EmployeeName = employee.EmployeeName;
+                applicationUser.UpdatedAt = DateTime.Now;
+                // passwordが空でなければパスワード変更する。
+                if (!String.IsNullOrEmpty(employee.Password))
+                {
+                    // パスワードの入力検証
+                    var result = await UserManager.PasswordValidator.ValidateAsync(employee.Password);
+                    // パスワードの検証に失敗したら、エラーを追加しEditビューをもう一度描画
+                    if (!result.Succeeded)
+                    {
+                        AddErrors(result);
+                        return View(employee);
+                    }
+                    // パスワードはハッシュ化したものをDBに登録する必要があるので、PasswordHasherでハッシュ化する
+                    applicationUser.PasswordHash = UserManager.PasswordHasher.HashPassword(employee.Password);
+                }
+                // StateをModifiedにしてUPDATE文を行うように設定
+                db.Entry(applicationUser).State = EntityState.Modified;
+                db.SaveChanges();
+
+                // TempDataにフラッシュメッセージを入れておく。TempDataは現在のリクエストと次のリクエストまで存在
+                TempData["flush"] = String.Format("{0}さんの情報を更新しました。", applicationUser.EmployeeName);
+
+                return RedirectToAction("Index", "Employees");
+            }
+
+            return View(employee);
+        }
         // POST: Employees/Edit/5
         // 過多ポスティング攻撃を防止するには、バインド先とする特定のプロパティを有効にしてください。
         // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
