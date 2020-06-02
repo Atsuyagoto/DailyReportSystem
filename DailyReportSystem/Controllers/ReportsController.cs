@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using DailyReportSystem.Models;
+using Microsoft.AspNet.Identity;//追加
+
 
 namespace DailyReportSystem.Controllers
 {
@@ -39,39 +41,40 @@ namespace DailyReportSystem.Controllers
         // GET: Reports/Create
         public ActionResult Create()
         {
-            return View();
+            return View(new ReportsCreateViewModel());
         }
 
         // POST: Reports/Create
-        // 過多ポスティング攻撃を防止するには、バインド先とする特定のプロパティを有効にしてください。
-        // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,EmployeeId,ReportDate,Title,Content,CreatedAt,UpdatedAt")] Report report)
+        public ActionResult Create([Bind(Include = "ReportDate,Title,Content")] ReportsCreateViewModel createViewModel)
         {
             if (ModelState.IsValid)
             {
+                Report report = new Report()
+                {
+                    ReportDate = createViewModel.ReportDate,
+                    Title = createViewModel.Title,
+                    Content = createViewModel.Content,
+                    //現在ログイン中のUserIdを取得し、EmployeeIdとして設定
+                    EmployeeId = User.Identity.GetUserId(),
+                    //作成時は現在の時刻に設定
+                    UpdatedAt = DateTime.Now,
+                    //作成時は現在の時刻に設定
+                    CreatedAt = DateTime.Now
+                };
+
+                //Contextに新しいオブジェクト追加
                 db.Reports.Add(report);
+                //実際のDBに反映
                 db.SaveChanges();
+                // TempDataにフラッシュメッセージを入れておく。
+                TempData["flush"] = "日報を登録しました。";
+                //indexにRedirect（ページ遷移）
                 return RedirectToAction("Index");
             }
 
-            return View(report);
-        }
-
-        // GET: Reports/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Report report = db.Reports.Find(id);
-            if (report == null)
-            {
-                return HttpNotFound();
-            }
-            return View(report);
+            return View(createViewModel);
         }
 
         // POST: Reports/Edit/5
