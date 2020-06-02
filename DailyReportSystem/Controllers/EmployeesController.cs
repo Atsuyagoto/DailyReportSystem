@@ -126,7 +126,7 @@ namespace DailyReportSystem.Controllers
         // POST: Employee/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "EmployeeName,Email,Password,AdminFlag")]
+        public async Task<ActionResult> Create([Bind(Include = "Email,EmployeeName,Password,AdminFlag")]
                                     EmployeesCreateViewModel model)
         {
 
@@ -150,6 +150,29 @@ namespace DailyReportSystem.Controllers
                 // DB登録に成功した場合
                 if (result.Succeeded)
                 {
+                    // Roleを追加する
+                    var roleManager = new RoleManager<ApplicationRole>(
+                        new RoleStore<ApplicationRole>(new ApplicationDbContext())
+                        );
+
+
+                    // AdminロールがDBに存在しなければ
+                    if (!await roleManager.RoleExistsAsync("Admin"))
+                    {
+                        // AdminロールをDBに作成
+                        await roleManager.CreateAsync(new ApplicationRole() { Name = "Admin" });
+                    }
+
+                    // mode.AdminFlagの内容によって、処理をswitchで変える。
+                    switch (model.AdminFlag)
+                    {
+                        case RolesEnum.Admin:
+                            // Adminロールをユーザーに対して設定
+                            await UserManager.AddToRoleAsync(applicationUser.Id, "Admin");
+                            break;
+                    }
+
+
                     // TempDataにフラッシュメッセージを入れておく。
                     TempData["flush"] = String.Format("{0}さんを登録しました。", applicationUser.EmployeeName);
 
