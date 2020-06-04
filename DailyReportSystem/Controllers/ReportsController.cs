@@ -20,7 +20,26 @@ namespace DailyReportSystem.Controllers
         // GET: Reports
         public ActionResult Index()
         {
-            return View(db.Reports.ToList());
+            // 日報のリストから、表示用のビューモデルのリストを作成
+            List<ReportsIndexViewModel> indexViewModels = new List<ReportsIndexViewModel>();
+            var reports = db.Reports
+                .OrderByDescending(r => r.ReportDate)
+                .ToList();
+            foreach (Report report in reports)
+            {
+                ReportsIndexViewModel indexViewModel = new ReportsIndexViewModel
+                {
+                    Id = report.Id,
+                    // 従業員のリストからこの日報のEmployeeIdで検索をかけて取得した従業員の名前を設定
+                    EmployeeName = db.Users.Find(report.EmployeeId).EmployeeName,
+                    ReportDate = report.ReportDate,
+                    Title = report.Title,
+                    Content = report.Content
+                };
+                indexViewModels.Add(indexViewModel);
+            }
+
+            return View(indexViewModels);
         }
 
         // GET: Reports/Details/5
