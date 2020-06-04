@@ -63,27 +63,29 @@ namespace DailyReportSystem.Controllers
         // GET: Employees
         public ActionResult Index()
         {
-            // 日報のリストから、表示用のビューモデルのリストを作成
-            List<ReportsIndexViewModel> indexViewModels = new List<ReportsIndexViewModel>();
-            var reports = db.Reports
-                .OrderByDescending(r => r.ReportDate)
-                .ToList();
-            foreach (Report report in reports)
+            // ビューに送るためのEmployeesIndexViewModelのリストを作成
+            List<EmployeesIndexViewModel> employees = new List<EmployeesIndexViewModel>();
+            // ユーザー一覧を、作成日時が最近のものから順にしてリストとして取得
+            List<ApplicationUser> users = db.Users.OrderByDescending(u => u.CreatedAt).ToList();
+            // ユーザーのリストを、EmployeesIndexViewModelのリストに変換
+            foreach (ApplicationUser applicationUser in users)
             {
-                ReportsIndexViewModel indexViewModel = new ReportsIndexViewModel
+                // EmployeesIndexViewModelをApplicationUserから必要なプロパティだけ抜き出して作成
+                EmployeesIndexViewModel employee = new EmployeesIndexViewModel
                 {
-                    Id = report.Id,
-                    // 従業員のリストからこの日報のEmployeeIdで検索をかけて取得した従業員の名前を設定
-                    EmployeeName = db.Users.Find(report.EmployeeId).EmployeeName,
-                    ReportDate = report.ReportDate,
-                    Title = report.Title,
-                    Content = report.Content
-                };
-                indexViewModels.Add(indexViewModel);
-            }
+                    Email = applicationUser.Email,
+                    EmployeeName = applicationUser.EmployeeName,
+                    DeleteFlg = applicationUser.DeleteFlg,
+                    Id = applicationUser.Id
 
-            return View(indexViewModels);
+                };
+                // 作成したEmployeesIndexViewModelをリストに追加
+                employees.Add(employee);
+            }
+            // 作成したリストをIndexビューに送る
+            return View(employees);
         }
+    
         // GET: Employees/Details/5
         [Authorize(Roles = "Admin")]
         public ActionResult Details(string id)
@@ -297,22 +299,7 @@ namespace DailyReportSystem.Controllers
 
             return View(employee);
         }
-        // POST: Employees/Edit/5
-        // 過多ポスティング攻撃を防止するには、バインド先とする特定のプロパティを有効にしてください。
-        // 詳細については、https://go.microsoft.com/fwlink/?LinkId=317598 を参照してください。
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,EmployeeName,CreatedAt,UpdatedAt,DeleteFlg,Email,EmailConfirmed,PasswordHash,SecurityStamp,PhoneNumber,PhoneNumberConfirmed,TwoFactorEnabled,LockoutEndDateUtc,LockoutEnabled,AccessFailedCount,UserName")] ApplicationUser applicationUser)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(applicationUser).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(applicationUser);
-        }
-
+       
         // GET: Employees/Delete/5
         public ActionResult Delete(string id)
         {
